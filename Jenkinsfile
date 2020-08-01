@@ -1,21 +1,29 @@
-pipeline {
-    agent none
-    stages {
-        stage('Back-end') {
-            agent {
-                docker { image 'maven:3-alpine' }
-            }
-            steps {
-                sh 'mvn --version'
-            }
+node {
+    def app
+    
+     stage('Initialize'){
+        def dockerHome = tool 'myDocker'
+        env.PATH = "${dockerHome}/bin:${env.PATH}"
+    }
+
+    stage('Clone repository') { 
+        checkout scm
+    }
+
+    stage('Build image') {
+        app = docker.build("sound-ors/docker")
+    }
+
+    stage('Test image') {
+        app.inside {
+            sh 'echo "Tests passed"'
         }
-        stage('Front-end') {
-            agent {
-                docker { image 'node:14-alpine' }
-            }
-            steps {
-                sh 'node --version'
-            }
+    }
+
+    stage('Push image') {
+           docker.withRegistry('https://registry.hub.docker.com', 'docker-cred') {
+            app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
         }
     }
 }
