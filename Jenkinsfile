@@ -11,7 +11,7 @@ node {
     }
 
     stage('Build image') {
-        app = docker.build("sound-ors/docker")
+        app = docker.build("sachinteli/docker")
     }
 
     stage('Test image') {
